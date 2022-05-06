@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +12,9 @@ import org.neo4j.dbms.api.DatabaseManagementService;
 import org.neo4j.dbms.api.DatabaseManagementServiceBuilder;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.Transaction;
 
 public class DatabaseTest
 {
@@ -35,6 +39,15 @@ public class DatabaseTest
     void myPinkProgrammingTest() {
         GraphDatabaseService database = dbms.database( GraphDatabaseSettings.DEFAULT_DATABASE_NAME );
 
-        assertEquals(true,true);
+        try (Transaction tx = database.beginTx()) {
+            String value = "value";
+            tx.createNode( awesomeLabel ).setProperty(coolPropName, value);
+
+            ResourceIterator<Node> nodes = tx.findNodes(awesomeLabel);
+            assertTrue(nodes.hasNext());
+            Node node = nodes.next();
+            assertEquals(node.getProperty(coolPropName), value);
+            tx.commit();
+        }
     }
 }
